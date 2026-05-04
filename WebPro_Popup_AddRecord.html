@@ -1,0 +1,179 @@
+<div class="dns-panel-modal modal-dialog">
+    <div class="modal-content" role="document">
+        <div class="modal-body">
+            <div class="modal-close"></div>
+            <div style="max-height: 850px; overflow: hidden scroll;">
+                <div class="dns-panel-scrollable">
+                    <div class="modal-title">MANAGE DNS RECORDS</div>
+                    <div class="modal-dom-name">For webpropanel.com</div>
+                    <ul class="nav nav-tabs">
+                        <li role="presentation" class="tab-heading"><a role="button" href="#">ALL RECORDS</a></li>
+                        <li role="presentation" class="tab-heading active"><a data-testid="dns-A" role="button"
+                                href="#">A</a></li>
+                        <li role="presentation" class="tab-heading"><a data-testid="dns-AAAA" role="button"
+                                href="#">AAAA</a></li>
+                        <li role="presentation" class="tab-heading"><a data-testid="dns-MX" role="button"
+                                href="#">MX</a></li>
+                        <li role="presentation" class="tab-heading"><a role="button" href="#">CNAME</a></li>
+                        <li role="presentation" class="tab-heading"><a role="button" href="#">NS</a></li>
+                        <li role="presentation" class="tab-heading"><a role="button" href="#">TXT</a></li>
+                        <li role="presentation" class="tab-heading"><a role="button" href="#">SRV</a></li>
+                        <li role="presentation" class="tab-heading"><a role="button" href="#">SOA</a></li>
+                    </ul>
+                    <div class="dns-panel-wrap">
+                        <div>
+                            <div>
+                                <div>
+                                    <div>
+                                        <form action="#">
+                                            <div class="dns-add-title">Add A Record</div>
+                                            <div class="add-new-record-wrap">
+                                                <div class="dns-fieldset-wrap">
+                                                    <div class="dns-all-input-fields dns-add-new-record">
+                                                        <div class="dns-input-field-contracted">
+                                                            <div class="dns-field dns-domain"><input
+                                                                    name="dnsRecords.0.host" id="dnsRecords.0.host"
+                                                                    data-testid="dns-host" type="text"
+                                                                    placeholder="DOMAIN/SUB-DOMAIN" value=""><label
+                                                                    for="dnsRecords.0.host">DOMAIN/SUB-DOMAIN</label>
+                                                            </div>
+                                                            <div class="dns-field dns-type"><input
+                                                                    name="dnsRecords.0.type" type="text" disabled=""
+                                                                    value="A">
+                                                                <div class="dns-type-text">IN</div>
+                                                            </div>
+                                                            <div class="dns-field dns-ip"><input
+                                                                    name="dnsRecords.0.value" id="dnsRecords.0.value"
+                                                                    data-testid="dns-value" type="text"
+                                                                    placeholder="IPv4 ADDRESS*" value=""><label
+                                                                    for="dnsRecords.0.value">IPv4 ADDRESS*</label></div>
+                                                        </div>
+                                                        <div class="dns-input-field-expanded">
+                                                            <div class="dns-field dns-ttl-input"><select
+                                                                    name="dnsRecords.0.timetolive"
+                                                                    placeholder="TTL (Time to Live)">
+                                                                    <option value="Choose TTL">Choose TTL</option>
+                                                                    <option value="7200">2 hours</option>
+                                                                    <option value="14400">4 hours</option>
+                                                                    <option value="21600">6 hours</option>
+                                                                    <option value="43200">12 hours</option>
+                                                                    <option value="86400">1 day</option>
+                                                                    <option value="345600">4 days</option>
+                                                                    <option value="604800">1 week</option>
+                                                                </select><label>TTL (Time to Live)</label></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="dns-note add-new-record-note">These changes will take 4-6 hours
+                                                to come into effect.</div>
+                                            <div>
+                                                <div><button type="button" class="dns-add-record-button"><span>+</span>
+                                                        Add Another Record</button></div>
+                                                <div><button type="submit" disabled="" data-testid="add-new-record"
+                                                        class="add-record-submit">SAVE RECORD(S)</button></div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dns-current-record-title">CURRENT RECORDS<span
+                                    class="dns-current-record-number">(1)</span></div>
+                            <form action="#">
+                                <div class="dns-fieldset-wrap active">
+                                    <div class="dns-all-input-fields">
+                                        <div class="dns-input-field-contracted not-expanded">
+                                            <div class="dns-field dns-domain"><input id="host" type="text" disabled=""
+                                                    placeholder="DOMAIN / SUB-DOMAIN" value="webpropanel.com"><label
+                                                    for="host">DOMAIN/SUB-DOMAIN*</label></div>
+                                            <div class="dns-field dns-type"><input name="type" type="text" disabled=""
+                                                    value="NS">
+                                                <div class="dns-type-text">IN</div>
+                                            </div>
+                                            <div class="dns-field dns-ip"><input name="value" id="ipvalue" type="text"
+                                                    disabled="" placeholder="SUB-DOMAIN/FULLY QUALIFIED DOMAIN*"
+                                                    required="" value="rcwebinar.mars.orderbox-dns.com"><label
+                                                    for="ipvalue">SUB-DOMAIN/FULLY QUALIFIED DOMAIN*</label></div>
+                                            <div class="toggle-card"></div>
+                                        </div>
+                                    </div>
+                                    <div class="dns-field-action">
+                                        <div class="dns-edit-wrap"><button data-testid="edit-existing-dns-record"
+                                                class="dns-edit-button"><img
+                                                    src="https://assets.dstack.tech/static/media/edit-customer.5f24e1a05cf272296eb0b83b45111cdd.svg"
+                                                    alt="edit"></button></div>
+                                        <div class="dns-delete-wrap"><button data-testid="delete-existing-dns-record"
+                                                class="dns-delete-button no-delete-btn"><img
+                                                    src="https://assets.dstack.tech/static/media/del.2bd6d20de63fe92c8f8d3b47fcf00566.svg"
+                                                    alt="delete"></button></div>
+                                    </div>
+                                </div>
+                            </form>
+                            <form action="#">
+                                <div class="dns-fieldset-wrap active">
+                                    <div class="dns-all-input-fields">
+                                        <div class="dns-input-field-contracted not-expanded">
+                                            <div class="dns-field dns-domain"><input id="host" type="text" disabled=""
+                                                    placeholder="DOMAIN / SUB-DOMAIN" value="webpropanel.com"><label
+                                                    for="host">DOMAIN/SUB-DOMAIN*</label></div>
+                                            <div class="dns-field dns-type"><input name="type" type="text" disabled=""
+                                                    value="NS">
+                                                <div class="dns-type-text">IN</div>
+                                            </div>
+                                            <div class="dns-field dns-ip"><input name="value" id="ipvalue" type="text"
+                                                    disabled="" placeholder="SUB-DOMAIN/FULLY QUALIFIED DOMAIN*"
+                                                    required="" value="rcwebinar.mercury.orderbox-dns.com"><label
+                                                    for="ipvalue">SUB-DOMAIN/FULLY QUALIFIED DOMAIN*</label></div>
+                                            <div class="toggle-card"></div>
+                                        </div>
+                                    </div>
+                                    <div class="dns-field-action">
+                                        <div class="dns-edit-wrap"><button data-testid="edit-existing-dns-record"
+                                                class="dns-edit-button"><img
+                                                    src="https://assets.dstack.tech/static/media/edit-customer.5f24e1a05cf272296eb0b83b45111cdd.svg"
+                                                    alt="edit"></button></div>
+                                        <div class="dns-delete-wrap"><button data-testid="delete-existing-dns-record"
+                                                class="dns-delete-button no-delete-btn"><img
+                                                    src="https://assets.dstack.tech/static/media/del.2bd6d20de63fe92c8f8d3b47fcf00566.svg"
+                                                    alt="delete"></button></div>
+                                    </div>
+                                </div>
+                            </form>
+                            <form action="#">
+                                <div class="dns-fieldset-wrap active">
+                                    <div class="dns-all-input-fields">
+                                        <div class="dns-input-field-contracted not-expanded">
+                                            <div class="dns-field dns-domain"><input id="host" type="text" disabled=""
+                                                    placeholder="DOMAIN / SUB-DOMAIN"
+                                                    value="125050949.dns.webpropanel.com"><label
+                                                    for="host">DOMAIN/SUB-DOMAIN</label></div>
+                                            <div class="dns-field dns-type"><input name="type" type="text" disabled=""
+                                                    value="A">
+                                                <div class="dns-type-text">IN</div>
+                                            </div>
+                                            <div class="dns-field dns-ip"><input name="value" id="ipvalue" type="text"
+                                                    disabled="" placeholder="IPv4 ADDRESS*" required=""
+                                                    value="209.99.17.56"><label for="ipvalue">IPv4 ADDRESS*</label>
+                                            </div>
+                                            <div class="toggle-card"></div>
+                                        </div>
+                                    </div>
+                                    <div class="dns-field-action">
+                                        <div class="dns-edit-wrap"><button data-testid="edit-existing-dns-record"
+                                                class="dns-edit-button"><img
+                                                    src="https://assets.dstack.tech/static/media/edit-customer.5f24e1a05cf272296eb0b83b45111cdd.svg"
+                                                    alt="edit"></button></div>
+                                        <div class="dns-delete-wrap"><button data-testid="delete-existing-dns-record"
+                                                class="dns-delete-button no-delete-btn"><img
+                                                    src="https://assets.dstack.tech/static/media/del.2bd6d20de63fe92c8f8d3b47fcf00566.svg"
+                                                    alt="delete"></button></div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
