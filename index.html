@@ -740,8 +740,8 @@
                                                                                     <div class="col-md-4 r1ief3d3">
                                                                                         <div
                                                                                             class="lfloat nfd-mt-0.5 d197sppa">
-                                                                                            <button type="button" id="open-premium-dns-modal"
-                                                                                                class="wp-btn-blue-hollow push-half--right text-uppercase">MANAGE</button><button
+                                                                                            <button type="button"
+                                                                                                class="wp-btn-blue-hollow push-half--right text-uppercase" onclick="openPdnsModal()">MANAGE</button><button
                                                                                                 type="button"
                                                                                                 class="wp-btn-blue-hollow push-half--right text-uppercase">VIEW
                                                                                                 NAMESERVERS</button>
@@ -1379,6 +1379,448 @@
             </div>
         </div>
     </div>
+    <!-- ====== Premium DNS Modal ====== -->
+    <style>
+      #pdns-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 10000;
+        overflow-y: auto;
+        padding: 30px 16px;
+      }
+      #pdns-modal {
+        background: #fff;
+        max-width: 880px;
+        margin: 0 auto;
+        border-radius: 8px;
+        position: relative;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        overflow: hidden;
+      }
+      .pdns-modal-header {
+        padding: 24px 24px 0;
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .pdns-close-btn {
+        position: absolute;
+        top: 14px;
+        right: 18px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #9ca3af;
+        line-height: 1;
+        z-index: 1;
+      }
+      .pdns-close-btn:hover { color: #374151; }
+      .pdns-modal-title {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: #111827;
+        text-transform: uppercase;
+      }
+      .pdns-modal-domain {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 4px;
+        margin-bottom: 12px;
+      }
+      .pdns-main-tabs {
+        display: flex;
+        gap: 0;
+        margin-top: 4px;
+      }
+      .pdns-main-tab {
+        padding: 10px 28px;
+        border: none;
+        background: none;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        color: #6b7280;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -1px;
+        letter-spacing: 0.03em;
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .pdns-main-tab:hover { color: #374151; }
+      .pdns-main-tab.active {
+        color: #0069ff;
+        border-bottom-color: #0069ff;
+      }
+      .pdns-tab-content { display: none; }
+      .pdns-tab-content.active { display: block; }
+
+      /* DNSSEC */
+      .pdns-dnssec-panel { padding: 28px 24px; }
+      .pdns-dnssec-status-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .pdns-dnssec-label { font-weight: 600; font-size: 14px; color: #111827; }
+      .pdns-dnssec-subdesc { font-size: 12px; color: #6b7280; margin-top: 3px; }
+      .pdns-toggle { position: relative; width: 44px; height: 24px; display: inline-block; flex-shrink: 0; }
+      .pdns-toggle input { display: none; }
+      .pdns-toggle-slider {
+        position: absolute; inset: 0;
+        background: #d1d5db; border-radius: 24px; cursor: pointer; transition: background 0.2s;
+      }
+      .pdns-toggle-slider:before {
+        content: ''; position: absolute;
+        width: 18px; height: 18px; left: 3px; top: 3px;
+        background: #fff; border-radius: 50%; transition: transform 0.2s;
+      }
+      .pdns-toggle input:checked + .pdns-toggle-slider { background: #0069ff; }
+      .pdns-toggle input:checked + .pdns-toggle-slider:before { transform: translateX(20px); }
+      .pdns-dnssec-info {
+        font-size: 12.5px; color: #374151;
+        background: #eff6ff; border: 1px solid #bfdbfe;
+        border-radius: 6px; padding: 12px 16px; line-height: 1.6;
+      }
+      .pdns-ds-table-header {
+        display: grid; grid-template-columns: 80px 140px 120px 1fr;
+        gap: 12px; font-size: 11px; color: #6b7280;
+        font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .pdns-ds-table-row {
+        display: grid; grid-template-columns: 80px 140px 120px 1fr;
+        gap: 12px; font-size: 12.5px; color: #111827;
+        background: #f9fafb; border: 1px solid #e5e7eb;
+        border-radius: 6px; padding: 12px 14px;
+      }
+
+      /* Add Record Panel */
+      .pdns-back-btn {
+        background: none; border: none; color: #0069ff;
+        font-size: 13px; cursor: pointer; padding: 0;
+        margin-bottom: 16px; display: flex; align-items: center; gap: 5px;
+        font-weight: 500;
+      }
+      .pdns-back-btn:hover { text-decoration: underline; }
+      .pdns-add-record-header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      .pdns-add-record-body { padding: 20px 24px 24px; }
+      .pdns-add-record-title { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 0; }
+    </style>
+
+    <div id="pdns-overlay">
+      <div id="pdns-modal">
+
+        <!-- Header -->
+        <div class="pdns-modal-header">
+          <button class="pdns-close-btn" onclick="closePdnsModal()">&#x2715;</button>
+          <div class="pdns-modal-title">Manage DNS Records</div>
+          <div class="pdns-modal-domain">For webpropanel.com</div>
+          <div class="pdns-main-tabs">
+            <button class="pdns-main-tab active" id="pdns-tab-btn-records" onclick="switchPdnsTab('records')">DNS Records</button>
+            <button class="pdns-main-tab" id="pdns-tab-btn-dnssec" onclick="switchPdnsTab('dnssec')">DNSSEC Settings</button>
+          </div>
+        </div>
+
+        <!-- ── Tab: DNS Records ── -->
+        <div id="pdns-tab-records" class="pdns-tab-content active">
+
+          <!-- Add Record Panel (hidden by default) -->
+          <div id="pdns-add-record-panel" style="display:none;">
+            <div class="pdns-add-record-header">
+              <button class="pdns-back-btn" onclick="closePdnsAddRecord()">&#8592; Back to DNS Records</button>
+              <div class="pdns-add-record-title" id="pdns-add-record-title">Add A Record</div>
+            </div>
+            <div class="pdns-add-record-body">
+              <form action="#" onsubmit="return false;">
+                <div class="dns-fieldset-wrap" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:14px;">
+                  <div class="dns-all-input-fields dns-add-new-record">
+                    <div class="dns-input-field-contracted">
+                      <div class="dns-field dns-domain">
+                        <input name="host" id="pdns-add-host" type="text" placeholder="DOMAIN/SUB-DOMAIN" value="">
+                        <label for="pdns-add-host">DOMAIN/SUB-DOMAIN</label>
+                      </div>
+                      <div class="dns-field dns-type">
+                        <input id="pdns-add-type-input" name="type" type="text" disabled="" value="A">
+                        <div class="dns-type-text">IN</div>
+                      </div>
+                      <div class="dns-field dns-ip">
+                        <input name="value" id="pdns-add-value" type="text" placeholder="IPv4 ADDRESS*" value="">
+                        <label for="pdns-add-value" id="pdns-add-value-label">IPv4 ADDRESS*</label>
+                      </div>
+                    </div>
+                    <div class="dns-input-field-expanded">
+                      <div class="dns-field dns-ttl-input">
+                        <select name="timetolive">
+                          <option value="">Choose TTL</option>
+                          <option value="7200">2 hours</option>
+                          <option value="14400">4 hours</option>
+                          <option value="21600">6 hours</option>
+                          <option value="43200">12 hours</option>
+                          <option value="86400">1 day</option>
+                          <option value="345600">4 days</option>
+                          <option value="604800">1 week</option>
+                        </select>
+                        <label>TTL (Time to Live)</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="dns-note add-new-record-note" style="margin-bottom:16px;">These changes will take 4–6 hours to come into effect.</div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                  <button type="submit" class="add-record-submit">SAVE RECORD(S)</button>
+                  <button type="button" onclick="closePdnsAddRecord()" style="padding:8px 20px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;font-size:13px;color:#374151;">CANCEL</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- DNS Records List -->
+          <div id="pdns-records-list">
+            <div style="padding:0 24px 0;border-bottom:1px solid #e5e7eb;">
+              <ul class="nav nav-tabs" style="margin:0;border-bottom:none;flex-wrap:wrap;">
+                <li role="presentation" class="tab-heading active"><a role="button" href="#" onclick="return false;">ALL RECORDS</a></li>
+                <li role="presentation" class="tab-heading"><a role="button" href="#" onclick="return false;">A</a></li>
+                <li role="presentation" class="tab-heading"><a role="button" href="#" onclick="return false;">AAAA</a></li>
+                <li role="presentation" class="tab-heading"><a role="button" href="#" onclick="return false;">MX</a></li>
+                <li role="presentation" class="tab-heading"><a role="button" href="#" onclick="return false;">CNAME</a></li>
+                <li role="presentation" class="tab-heading"><a role="button" href="#" onclick="return false;">NS</a></li>
+                <li role="presentation" class="tab-heading"><a role="button" href="#" onclick="return false;">TXT</a></li>
+                <li role="presentation" class="tab-heading"><a role="button" href="#" onclick="return false;">SRV</a></li>
+                <li role="presentation" class="tab-heading"><a role="button" href="#" onclick="return false;">SOA</a></li>
+              </ul>
+            </div>
+            <div class="dns-panel-wrap" style="max-height:520px;overflow-y:auto;padding:12px 24px;">
+
+              <!-- A -->
+              <div class="dns-record-type">
+                <div class="dns-record-title">A<span class="dns-record-number">(1)</span></div>
+                <form action="#" onsubmit="return false;">
+                  <div class="dns-fieldset-wrap active">
+                    <div class="dns-all-input-fields">
+                      <div class="dns-input-field-contracted not-expanded">
+                        <div class="dns-field dns-domain"><input type="text" disabled="" value="125050949.dns.webpropanel.com"><label>DOMAIN/SUB-DOMAIN</label></div>
+                        <div class="dns-field dns-type"><input type="text" disabled="" value="A"><div class="dns-type-text">IN</div></div>
+                        <div class="dns-field dns-ip"><input type="text" disabled="" value="209.99.17.56"><label>IPv4 ADDRESS*</label></div>
+                        <div class="toggle-card"></div>
+                      </div>
+                    </div>
+                    <div class="dns-field-action">
+                      <div class="dns-edit-wrap"><button class="dns-edit-button"><img src="https://assets.dstack.tech/static/media/edit-customer.5f24e1a05cf272296eb0b83b45111cdd.svg" alt="edit"></button></div>
+                      <div class="dns-delete-wrap"><button class="dns-delete-button no-delete-btn"><img src="https://assets.dstack.tech/static/media/del.2bd6d20de63fe92c8f8d3b47fcf00566.svg" alt="delete"></button></div>
+                    </div>
+                  </div>
+                </form>
+                <button type="button" class="dns-add-record-button" onclick="openPdnsAddRecord('A','IPv4 ADDRESS*')"><span>+</span>Add A Record</button>
+              </div>
+
+              <!-- AAAA -->
+              <div class="dns-record-type">
+                <div class="dns-record-title">AAAA<span class="dns-record-number">(0)</span></div>
+                <p>You have not added any AAAA records</p>
+                <button type="button" class="dns-add-record-button" onclick="openPdnsAddRecord('AAAA','IPv6 ADDRESS*')"><span>+</span>Add AAAA Record</button>
+              </div>
+
+              <!-- MX -->
+              <div class="dns-record-type">
+                <div class="dns-record-title">MX<span class="dns-record-number">(2)</span></div>
+                <form action="#" onsubmit="return false;">
+                  <div class="dns-fieldset-wrap active">
+                    <div class="dns-all-input-fields"><div class="dns-input-field-contracted not-expanded">
+                      <div class="dns-field dns-domain"><input type="text" disabled="" value="webpropanel.com"><label>DOMAIN/SUB-DOMAIN</label></div>
+                      <div class="dns-field dns-type"><input type="text" disabled="" value="MX"><div class="dns-type-text">IN</div></div>
+                      <div class="dns-field dns-ip"><input type="text" disabled="" value="mx1.titan.email"><label>MAIL SERVER*</label></div>
+                      <div class="toggle-card"></div>
+                    </div></div>
+                    <div class="dns-field-action">
+                      <div class="dns-edit-wrap"><button class="dns-edit-button"><img src="https://assets.dstack.tech/static/media/edit-customer.5f24e1a05cf272296eb0b83b45111cdd.svg" alt="edit"></button></div>
+                      <div class="dns-delete-wrap"><button class="dns-delete-button no-delete-btn"><img src="https://assets.dstack.tech/static/media/del.2bd6d20de63fe92c8f8d3b47fcf00566.svg" alt="delete"></button></div>
+                    </div>
+                  </div>
+                </form>
+                <form action="#" onsubmit="return false;">
+                  <div class="dns-fieldset-wrap active">
+                    <div class="dns-all-input-fields"><div class="dns-input-field-contracted not-expanded">
+                      <div class="dns-field dns-domain"><input type="text" disabled="" value="webpropanel.com"><label>DOMAIN/SUB-DOMAIN</label></div>
+                      <div class="dns-field dns-type"><input type="text" disabled="" value="MX"><div class="dns-type-text">IN</div></div>
+                      <div class="dns-field dns-ip"><input type="text" disabled="" value="mx2.titan.email"><label>MAIL SERVER*</label></div>
+                      <div class="toggle-card"></div>
+                    </div></div>
+                    <div class="dns-field-action">
+                      <div class="dns-edit-wrap"><button class="dns-edit-button"><img src="https://assets.dstack.tech/static/media/edit-customer.5f24e1a05cf272296eb0b83b45111cdd.svg" alt="edit"></button></div>
+                      <div class="dns-delete-wrap"><button class="dns-delete-button no-delete-btn"><img src="https://assets.dstack.tech/static/media/del.2bd6d20de63fe92c8f8d3b47fcf00566.svg" alt="delete"></button></div>
+                    </div>
+                  </div>
+                </form>
+                <button type="button" class="dns-add-record-button" onclick="openPdnsAddRecord('MX','MAIL SERVER*')"><span>+</span>Add MX Record</button>
+              </div>
+
+              <!-- CNAME -->
+              <div class="dns-record-type">
+                <div class="dns-record-title">CNAME<span class="dns-record-number">(0)</span></div>
+                <p>You have not added any CNAME records</p>
+                <button type="button" class="dns-add-record-button" onclick="openPdnsAddRecord('CNAME','FULLY QUALIFIED DOMAIN NAME*')"><span>+</span>Add CNAME Record</button>
+              </div>
+
+              <!-- NS -->
+              <div class="dns-record-type">
+                <div class="dns-record-title">NS<span class="dns-record-number">(4)</span></div>
+                <form action="#" onsubmit="return false;">
+                  <div class="dns-fieldset-wrap active">
+                    <div class="dns-all-input-fields"><div class="dns-input-field-contracted not-expanded">
+                      <div class="dns-field dns-domain"><input type="text" disabled="" value="webpropanel.com"><label>DOMAIN/SUB-DOMAIN*</label></div>
+                      <div class="dns-field dns-type"><input type="text" disabled="" value="NS"><div class="dns-type-text">IN</div></div>
+                      <div class="dns-field dns-ip"><input type="text" disabled="" value="rcwebinar.mars.orderbox-dns.com"><label>NAMESERVER*</label></div>
+                      <div class="toggle-card"></div>
+                    </div></div>
+                    <div class="dns-field-action">
+                      <div class="dns-edit-wrap"><button class="dns-edit-button"><img src="https://assets.dstack.tech/static/media/edit-customer.5f24e1a05cf272296eb0b83b45111cdd.svg" alt="edit"></button></div>
+                      <div class="dns-delete-wrap"><button class="dns-delete-button no-delete-btn"><img src="https://assets.dstack.tech/static/media/del.2bd6d20de63fe92c8f8d3b47fcf00566.svg" alt="delete"></button></div>
+                    </div>
+                  </div>
+                </form>
+                <button type="button" class="dns-add-record-button" onclick="openPdnsAddRecord('NS','NAMESERVER*')"><span>+</span>Add NS Record</button>
+              </div>
+
+              <!-- TXT -->
+              <div class="dns-record-type">
+                <div class="dns-record-title">TXT<span class="dns-record-number">(2)</span></div>
+                <form action="#" onsubmit="return false;">
+                  <div class="dns-fieldset-wrap active">
+                    <div class="dns-all-input-fields"><div class="dns-input-field-contracted not-expanded">
+                      <div class="dns-field dns-domain"><input type="text" disabled="" value="titan1._domainkey.webpropanel.com"><label>DOMAIN/SUB-DOMAIN</label></div>
+                      <div class="dns-field dns-type"><input type="text" disabled="" value="TXT"><div class="dns-type-text">IN</div></div>
+                      <div class="dns-field dns-ip"><input type="text" disabled="" class="dns-txt-inputfield" value="v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3..."><label>TXT VALUE*</label></div>
+                      <div class="toggle-card"></div>
+                    </div></div>
+                    <div class="dns-field-action">
+                      <div class="dns-edit-wrap"><button class="dns-edit-button"><img src="https://assets.dstack.tech/static/media/edit-customer.5f24e1a05cf272296eb0b83b45111cdd.svg" alt="edit"></button></div>
+                      <div class="dns-delete-wrap"><button class="dns-delete-button no-delete-btn"><img src="https://assets.dstack.tech/static/media/del.2bd6d20de63fe92c8f8d3b47fcf00566.svg" alt="delete"></button></div>
+                    </div>
+                  </div>
+                </form>
+                <button type="button" class="dns-add-record-button" onclick="openPdnsAddRecord('TXT','TXT VALUE*')"><span>+</span>Add TXT Record</button>
+              </div>
+
+              <!-- SRV -->
+              <div class="dns-record-type">
+                <div class="dns-record-title">SRV<span class="dns-record-number">(0)</span></div>
+                <p>You have not added any SRV records</p>
+                <button type="button" class="dns-add-record-button" onclick="openPdnsAddRecord('SRV','TARGET HOST*')"><span>+</span>Add SRV Record</button>
+              </div>
+
+              <!-- SOA -->
+              <div class="dns-record-type">
+                <div class="dns-record-title">SOA<span class="dns-record-number">(1)</span></div>
+                <form action="#" onsubmit="return false;">
+                  <div class="dns-fieldset-wrap active">
+                    <div class="dns-all-input-fields"><div class="dns-input-field-contracted not-expanded">
+                      <div class="dns-field dns-domain"><input type="text" disabled="" value="webpropanel.com"><label>DOMAIN / SUB-DOMAIN</label></div>
+                      <div class="dns-field dns-type"><input type="text" disabled="" value="SOA"><div class="dns-type-text">IN</div></div>
+                      <div class="dns-field"><input type="text" disabled="" value="simrantalreja@gmail.com"><label>RESPONSIBLE PERSON</label></div>
+                      <div class="toggle-card"></div>
+                    </div></div>
+                    <div class="dns-field-action">
+                      <div class="dns-edit-wrap"><button class="dns-edit-button"><img src="https://assets.dstack.tech/static/media/edit-customer.5f24e1a05cf272296eb0b83b45111cdd.svg" alt="edit"></button></div>
+                      <div class="dns-delete-wrap"><button disabled="" class="dns-delete-button"><img src="https://assets.dstack.tech/static/media/del.2bd6d20de63fe92c8f8d3b47fcf00566.svg" alt="delete"></button></div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </div><!-- /dns-panel-wrap -->
+          </div><!-- /pdns-records-list -->
+        </div><!-- /pdns-tab-records -->
+
+        <!-- ── Tab: DNSSEC Settings ── -->
+        <div id="pdns-tab-dnssec" class="pdns-tab-content">
+          <div class="pdns-dnssec-panel">
+            <div class="pdns-dnssec-status-row">
+              <div>
+                <div class="pdns-dnssec-label">DNSSEC</div>
+                <div class="pdns-dnssec-subdesc">Protect your domain from DNS spoofing and cache poisoning</div>
+              </div>
+              <label class="pdns-toggle">
+                <input type="checkbox" id="pdns-dnssec-toggle">
+                <span class="pdns-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="pdns-dnssec-info">
+              <strong>What is DNSSEC?</strong> Domain Name System Security Extensions (DNSSEC) adds cryptographic signatures to your DNS records, allowing resolvers to verify their authenticity and protect against spoofing and cache poisoning attacks.
+            </div>
+            <div id="pdns-dnssec-records" style="margin-top:24px;display:none;">
+              <div style="font-weight:600;font-size:13px;margin-bottom:10px;color:#111827;">DS Records</div>
+              <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;">
+                <div class="pdns-ds-table-header">
+                  <span>Key Tag</span>
+                  <span>Algorithm</span>
+                  <span>Digest Type</span>
+                  <span>Digest</span>
+                </div>
+                <div class="pdns-ds-table-row">
+                  <span>12345</span>
+                  <span>8 (RSA/SHA-256)</span>
+                  <span>2 (SHA-256)</span>
+                  <span style="font-family:monospace;font-size:11px;word-break:break-all;">ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /pdns-tab-dnssec -->
+
+      </div><!-- /pdns-modal -->
+    </div><!-- /pdns-overlay -->
+
+    <script>
+      function openPdnsModal() {
+        document.getElementById('pdns-overlay').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+      }
+      function closePdnsModal() {
+        document.getElementById('pdns-overlay').style.display = 'none';
+        document.body.style.overflow = '';
+        closePdnsAddRecord();
+      }
+      function switchPdnsTab(tab) {
+        var isRecords = tab === 'records';
+        document.getElementById('pdns-tab-records').classList.toggle('active', isRecords);
+        document.getElementById('pdns-tab-dnssec').classList.toggle('active', !isRecords);
+        document.getElementById('pdns-tab-btn-records').classList.toggle('active', isRecords);
+        document.getElementById('pdns-tab-btn-dnssec').classList.toggle('active', !isRecords);
+        if (isRecords) closePdnsAddRecord();
+      }
+      function openPdnsAddRecord(type, valueLabel) {
+        document.getElementById('pdns-add-record-panel').style.display = 'block';
+        document.getElementById('pdns-records-list').style.display = 'none';
+        document.getElementById('pdns-add-record-title').textContent = 'Add ' + type + ' Record';
+        document.getElementById('pdns-add-type-input').value = type;
+        var lbl = document.getElementById('pdns-add-value-label');
+        var inp = document.getElementById('pdns-add-value');
+        if (lbl) lbl.textContent = valueLabel || 'VALUE*';
+        if (inp) inp.placeholder = valueLabel || 'VALUE*';
+      }
+      function closePdnsAddRecord() {
+        document.getElementById('pdns-add-record-panel').style.display = 'none';
+        document.getElementById('pdns-records-list').style.display = 'block';
+      }
+      document.getElementById('pdns-dnssec-toggle').addEventListener('change', function() {
+        document.getElementById('pdns-dnssec-records').style.display = this.checked ? 'block' : 'none';
+      });
+      document.getElementById('pdns-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closePdnsModal();
+      });
+    </script>
+    <!-- ====== /Premium DNS Modal ====== -->
+
     <script src="/web-assets/packages/@superpanel/i18n/locales.js"></script>
     <script src="/web-assets/webpro-warnings/warnings.js"></script>
     <script type="text/javascript" id=""
@@ -1392,16 +1834,6 @@
                     })
                 } catch (a) { try { pendo.initialize({ visitor: { id: customerid, role: "customer" } }) } catch (b) { } }
             })("f0ef3b96-05e0-4b6a-78d6-57896f726d58");</script>
-
-<!-- ===== Premium DNS modal injection ===== -->
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="modal.css">
-<div id="premium-dns-modal-root"></div>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script type="text/babel" src="modal.jsx"></script>
-
 </body>
 
 </html>
